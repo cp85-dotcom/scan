@@ -101,22 +101,42 @@ html,body{overscroll-behavior-y:contain}
 #instBox p{margin:0}
 
 /* Edit */
-.edit{display:grid;gap:16px}
-@media(min-width:860px){.edit{grid-template-columns:1.3fr 1fr;align-items:start}}
-#outWrap{background:var(--card);border-radius:20px;padding:10px;border:1px solid var(--line);display:flex;justify-content:center;align-items:center;min-height:200px}
+/* Vollbild wie die Foto-Apps: oben Zurueck/Fertig, mittig Vorschau, unten Werkzeuge */
+body.noscroll{overflow:hidden}
+#vEdit:not(.hidden){position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.eTop{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;max-width:960px;width:100%;margin:0 auto}
+.eTop b{font-weight:300;font-size:16px;text-transform:uppercase;color:var(--title);letter-spacing:.08em}
+#outWrap{flex:1 1 0;min-height:0;position:relative;display:flex;justify-content:center;align-items:center;padding:6px 12px;overflow:hidden;max-width:960px;width:100%;margin:0 auto}
 #zbox{overflow:hidden;line-height:0;touch-action:none;border-radius:6px;background:#fff;cursor:grab;flex:0 0 auto}
 #outCv{display:block;transform-origin:0 0;will-change:transform}
-.chips{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.zoom{position:absolute;right:16px;bottom:12px;display:flex;gap:6px}
+.zoom .btn{min-width:38px;background:rgba(44,44,46,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.ePanel{flex:0 0 auto;max-width:960px;width:100%;margin:0 auto;padding:0 0 4px}
+.tabc{min-height:128px}
+.chips{display:flex;gap:12px;overflow-x:auto;padding:10px 16px 8px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;width:78px;text-align:center;background:none;border:0;color:var(--text);cursor:pointer;padding:0;font:inherit}
 .chip canvas{display:block;width:78px;height:78px;object-fit:cover;border-radius:12px;border:2px solid transparent;background:#222}
 .chip.on canvas{border-color:var(--lime)}
 .chip.on .cap{color:var(--lime)}
 .chip .cap{display:block;margin-top:5px}
-.sl{margin:0 0 16px}
-.sl label{display:flex;justify-content:space-between;margin-bottom:6px}
-.sl output{color:var(--lime);font-weight:600}
-input[type=range]{width:100%;height:30px;accent-color:var(--lime);background:transparent;margin:0}
+/* Anpassen: Lineal + runde Werkzeug-Symbole mit Wert-Ring */
+.vlabel{text-align:center;color:var(--lime);font-weight:600;font-size:13px;height:20px;margin-top:6px}
+#ruler{display:block;width:100%;height:40px;touch-action:none;cursor:ew-resize;outline:none}
+.tools2{display:flex;gap:14px;overflow-x:auto;padding:6px 16px 8px;justify-content:center;scrollbar-width:none}
+.tools2::-webkit-scrollbar{display:none}
+.tool{flex:0 0 auto;width:62px;text-align:center;background:none;border:0;color:#8e8e93;font:inherit;font-size:11px;cursor:pointer;padding:0}
+.tool .ring{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;margin:0 auto 4px;
+  background:conic-gradient(var(--lime) var(--p,0%),#3a3a3c 0)}
+.tool .ring i{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--card2);color:#fff}
+.tool svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tool.on{color:var(--lime)}
+.tool.on .ring i{background:var(--lime);color:#000}
+.rotrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:30px 16px 0}
+.eTabs{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:6px 8px 4px}
+.eTabs button{flex:1;background:none;border:0;color:#8e8e93;font:600 12px "Open Sans",sans-serif;letter-spacing:.05em;padding:8px 4px;cursor:pointer;min-height:44px}
+.eTabs button.on{color:var(--lime)}
 .toast{
   position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,30px);
   background:rgba(44,44,46,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -192,31 +212,31 @@ input[type=range]{width:100%;height:30px;accent-color:var(--lime);background:tra
 
 <!-- EDIT -->
 <section id="vEdit" class="hidden">
-  <div class="step"><b>Optimieren</b><span class="cap">Filter &amp; Helligkeit</span></div>
-  <div class="edit">
-    <div><div id="outWrap"><div id="zbox"><canvas id="outCv"></canvas></div></div>
-      <div class="row" style="margin-top:10px;align-items:center"><button class="btn sm ghost" id="zIn" aria-label="Vergrößern">+</button><button class="btn sm ghost" id="zOut" aria-label="Verkleinern">−</button><button class="btn sm ghost" id="zFit">Anpassen</button><span class="cap" style="opacity:.7">Zwei Finger oder Mausrad: zoomen, ziehen: verschieben</span></div></div>
-    <div>
-      <div class="chips" id="chips"></div>
-      <div class="sl"><label><span>Helligkeit</span><output id="oB">0</output></label>
-        <input type="range" id="sB" min="-100" max="100" value="0"></div>
-      <div class="sl"><label><span>Kontrast</span><output id="oC">0</output></label>
-        <input type="range" id="sC" min="-100" max="100" value="0"></div>
-      <div class="sl"><label><span>Weiß verstärken</span><output id="oW">0</output></label>
-        <input type="range" id="sW" min="0" max="100" value="0"></div>
-      <div class="sl"><label><span>Schärfe</span><output id="oS">0</output></label>
-        <input type="range" id="sS" min="0" max="100" value="0"></div>
-      <div class="sl"><label><span>Text schwärzen</span><output id="oT">0</output></label>
-        <input type="range" id="sT" min="0" max="100" value="0"></div>
-      <div class="row">
-        <button class="btn sm ghost" id="btnRotL">&#8634; Drehen</button>
-        <button class="btn sm ghost" id="btnRotR">Drehen &#8635;</button>
-        <button class="btn sm ghost" id="btnReset">Zurücksetzen</button>
+  <div class="eTop">
+    <button class="btn sm" id="btnBack">&#8249; Zurück</button>
+    <b>Optimieren</b>
+    <button class="btn sm primary" id="btnDone">Fertig</button>
+  </div>
+  <div id="outWrap">
+    <div id="zbox"><canvas id="outCv"></canvas></div>
+    <div class="zoom"><button class="btn sm" id="zOut" aria-label="Verkleinern">&#8722;</button><button class="btn sm" id="zFit" aria-label="Einpassen">&#10530;</button><button class="btn sm" id="zIn" aria-label="Vergrößern">+</button></div>
+  </div>
+  <div class="ePanel">
+    <div class="tabc" id="tabFilter"><div class="chips" id="chips"></div></div>
+    <div class="tabc hidden" id="tabAdjust">
+      <div class="vlabel" id="vLabel"></div>
+      <canvas id="ruler" tabindex="0" role="slider" aria-label="Wert"></canvas>
+      <div class="tools2" id="tools2"></div>
+    </div>
+    <div class="tabc hidden" id="tabRotate">
+      <div class="rotrow">
+        <button class="btn" id="btnRotL">&#8634; Links drehen</button>
+        <button class="btn" id="btnRotR">Rechts drehen &#8635;</button>
+        <button class="btn ghost" id="btnReset">Filter zurücksetzen</button>
       </div>
-      <div class="actions">
-        <button class="btn" id="btnBack">Zurück</button>
-        <button class="btn primary" id="btnDone">Fertig</button>
-      </div>
+    </div>
+    <div class="eTabs" role="tablist">
+      <button class="on" data-t="Filter">Filter</button><button data-t="Adjust">Anpassen</button><button data-t="Rotate">Drehen</button>
     </div>
   </div>
 </section>
@@ -263,7 +283,7 @@ S.mode='doc';S.cur=MODES.doc;
 
 /* ---------- Hilfsfunktionen ---------- */
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2600)}
-function show(id){['vHome','vCrop','vEdit'].forEach(v=>$(v).classList.toggle('hidden',v!==id));window.scrollTo(0,0)}
+function show(id){['vHome','vCrop','vEdit'].forEach(v=>$(v).classList.toggle('hidden',v!==id));document.body.classList.toggle('noscroll',id==='vEdit');window.scrollTo(0,0)}
 function mkCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
 
 function boxBlur(a,w,h,r,ch){
@@ -737,18 +757,76 @@ function setFilter(key,keepParams){
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.k===key));
   syncSliders();render();
 }
-function syncSliders(){
-  [['B','b'],['C','c'],['W','w'],['S','s'],['T','t']].forEach(([i,k])=>{$('s'+i).value=S.p[k];$('o'+i).textContent=S.p[k]});
+/* ---------- Anpassen: Werkzeug-Symbole + Lineal (wie Apple Fotos) ---------- */
+const ICO={
+  b:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  c:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
+  w:'<path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/>',
+  s:'<path d="M12 4l8 15H4z"/>',
+  t:'<text x="2.5" y="17" font-size="14" font-weight="700" fill="currentColor" stroke="none" font-family="Open Sans,sans-serif">Aa</text>'
+};
+const TOOLS=[{k:'b',name:'Helligkeit',min:-100,max:100},{k:'c',name:'Kontrast',min:-100,max:100},{k:'w',name:'Weiß',min:0,max:100},
+             {k:'s',name:'Schärfe',min:0,max:100},{k:'t',name:'Text',min:0,max:100}];
+S.tool='b';
+const tool=()=>TOOLS.find(t=>t.k===S.tool);
+(function(){
+  const box=$('tools2');
+  TOOLS.forEach(t=>{const b=document.createElement('button');b.className='tool';b.dataset.k=t.k;
+    b.innerHTML=`<span class="ring"><i><svg viewBox="0 0 24 24" aria-hidden="true">${ICO[t.k]}</svg></i></span>${t.name}`;
+    b.onclick=()=>{S.tool=t.k;syncSliders()};box.appendChild(b)});
+})();
+const rul=$('ruler'),PPU=3;
+function drawRuler(){
+  const w=rul.clientWidth,h=40,dpr=window.devicePixelRatio||1;if(!w)return;
+  if(rul.width!==Math.round(w*dpr)){rul.width=Math.round(w*dpr);rul.height=Math.round(h*dpr)}
+  const g=rul.getContext('2d'),t=tool(),v=S.p[t.k];
+  g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  const u0=Math.floor(v-w/2/PPU),u1=Math.ceil(v+w/2/PPU);
+  for(let u=u0;u<=u1;u++){
+    if(u<t.min||u>t.max||u%2)continue;
+    const x=w/2+(u-v)*PPU,major=u%10===0,fade=Math.min(1,Math.max(.15,1-Math.abs(x-w/2)/(w/2)));
+    g.strokeStyle=`rgba(255,255,255,${(major?.7:.4)*fade})`;g.lineWidth=1;
+    g.beginPath();g.moveTo(Math.round(x)+.5,major?12:16);g.lineTo(Math.round(x)+.5,major?32:28);g.stroke()}
+  g.strokeStyle='#96B200';g.lineWidth=2;g.beginPath();g.moveTo(w/2,6);g.lineTo(w/2,36);g.stroke();
 }
+function syncSliders(){
+  const t=tool();
+  document.querySelectorAll('.tool').forEach(b=>{const k=b.dataset.k,tt=TOOLS.find(x=>x.k===k);
+    b.classList.toggle('on',k===S.tool);b.querySelector('.ring').style.setProperty('--p',Math.min(100,Math.abs(S.p[k]||0))+'%')});
+  const v=S.p[t.k];$('vLabel').textContent=`${t.name}  ${t.min<0&&v>0?'+':''}${v}`;
+  rul.setAttribute('aria-valuenow',v);rul.setAttribute('aria-valuemin',t.min);rul.setAttribute('aria-valuemax',t.max);rul.setAttribute('aria-label',t.name);
+  drawRuler();
+}
+function setVal(v){
+  const t=tool();v=Math.round(Math.min(t.max,Math.max(t.min,v)));if(v===S.p[t.k])return;
+  S.p[t.k]=v;syncSliders();cancelAnimationFrame(raf);raf=requestAnimationFrame(render);
+}
+(function(){
+  let x0=0,v0=0,on=false,moved=0,lastTap=0;
+  rul.addEventListener('pointerdown',e=>{on=true;x0=e.clientX;v0=S.p[tool().k];moved=0;rul.setPointerCapture(e.pointerId);e.preventDefault()});
+  rul.addEventListener('pointermove',e=>{if(!on)return;const dx=e.clientX-x0;moved=Math.max(moved,Math.abs(dx));setVal(v0-dx/PPU)});
+  const end=()=>{if(!on)return;on=false;
+    if(moved<5){const n=Date.now();
+      if(n-lastTap<320){const t=tool();setVal(FILTERS[S.filter][t.k]);lastTap=0}else lastTap=n}};
+  rul.addEventListener('pointerup',end);rul.addEventListener('pointercancel',()=>{on=false});
+  rul.addEventListener('keydown',e=>{
+    const d=e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:e.key==='ArrowRight'||e.key==='ArrowUp'?1:0;
+    if(d){e.preventDefault();setVal(S.p[tool().k]+d*(e.shiftKey?10:1))}});
+  window.addEventListener('resize',()=>{if(!$('vEdit').classList.contains('hidden'))drawRuler()});
+})();
+/* Tabs: Filter / Anpassen / Drehen */
+function showTab(t){
+  ['Filter','Adjust','Rotate'].forEach(n=>$('tab'+n).classList.toggle('hidden',n!==t));
+  document.querySelectorAll('.eTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  if(t==='Adjust')requestAnimationFrame(syncSliders);
+}
+document.querySelectorAll('.eTabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
 let raf=0;
 function render(){
   const src=FILTERS[S.filter].norm?getNorm():S.base,cvo=$('outCv');
   if(cvo.width!==src.width||cvo.height!==src.height){cvo.width=src.width;cvo.height=src.height;S.outData=new ImageData(src.width,src.height);fitCanvas()}
   applyFilter(src,S.p,S.outData,true);cvo.getContext('2d').putImageData(S.outData,0,0);
 }
-[['B','b'],['C','c'],['W','w'],['S','s'],['T','t']].forEach(([i,k])=>{
-  $('s'+i).oninput=e=>{S.p[k]=+e.target.value;$('o'+i).textContent=e.target.value;
-    cancelAnimationFrame(raf);raf=requestAnimationFrame(render)}});
 $('btnReset').onclick=()=>setFilter(S.filter);
 $('btnRotL').onclick=()=>{S.rot--;buildBase()};
 $('btnRotR').onclick=()=>{S.rot++;buildBase()};
@@ -774,7 +852,7 @@ function applyView(){
   zb.style.cursor=V.z>1?'grab':'default';
 }
 function fitCanvas(){
-  const aw=Math.max(120,$('outWrap').clientWidth-20),ah=Math.max(200,window.innerHeight*.62);
+  const ow=$('outWrap'),aw=Math.max(80,ow.clientWidth-24),ah=Math.max(80,ow.clientHeight-12);
   const k=Math.min(aw/ocv.width,ah/ocv.height);
   ocv.style.width=Math.round(ocv.width*k)+'px';ocv.style.height=Math.round(ocv.height*k)+'px';
   V.z=1;applyView();
